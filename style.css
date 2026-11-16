@@ -81,6 +81,35 @@ button:hover {
     font-size: 0.95rem;
 }
 
+.filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-btn,
+.edit-btn,
+.delete-btn {
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+
+.filter-btn {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 7px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.filter-btn.active {
+    background: #4f46e5;
+    color: white;
+}
+
 ul {
     list-style: none;
     padding: 0;
@@ -116,6 +145,14 @@ li.completed span {
     color: #6b7280;
 }
 
+.edit-btn {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 .delete-btn {
     background: #fee2e2;
     color: #b91c1c;
@@ -130,3 +167,4 @@ li.completed span {
     border: 1px dashed #cbd5e1;
     padding: 18px;
 }
+

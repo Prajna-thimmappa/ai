@@ -5,8 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskList = document.getElementById('taskList');
     const taskCount = document.getElementById('taskCount');
     const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+    const filterButtons = document.querySelectorAll('.filter-btn');
 
     let tasks = loadTasks();
+    let currentFilter = 'all';
 
     function loadTasks() {
         try {
@@ -21,6 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     }
 
+    function getVisibleTasks() {
+        switch (currentFilter) {
+            case 'active':
+                return tasks.filter((task) => !task.completed);
+            case 'completed':
+                return tasks.filter((task) => task.completed);
+            default:
+                return tasks;
+        }
+    }
+
     function updateTaskCount() {
         const remaining = tasks.filter((task) => !task.completed).length;
         taskCount.textContent = `${remaining} task${remaining === 1 ? '' : 's'} left`;
@@ -28,14 +41,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTasks() {
         taskList.innerHTML = '';
+        const visibleTasks = getVisibleTasks();
 
-        if (tasks.length === 0) {
+        if (visibleTasks.length === 0) {
             const emptyState = document.createElement('li');
             emptyState.className = 'empty-state';
-            emptyState.textContent = 'No tasks yet. Add one above!';
+
+            if (tasks.length === 0) {
+                emptyState.textContent = 'No tasks yet. Add one above!';
+            } else if (currentFilter === 'active') {
+                emptyState.textContent = 'No active tasks. Nice work!';
+            } else if (currentFilter === 'completed') {
+                emptyState.textContent = 'No completed tasks yet.';
+            } else {
+                emptyState.textContent = 'No tasks found.';
+            }
+
             taskList.appendChild(emptyState);
         } else {
-            tasks.forEach((task) => {
+            visibleTasks.forEach((task) => {
                 const li = document.createElement('li');
                 li.classList.toggle('completed', task.completed);
 
@@ -52,6 +76,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const span = document.createElement('span');
                 span.textContent = task.text;
 
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'edit-btn';
+                editBtn.textContent = 'Edit';
+                editBtn.setAttribute('aria-label', `Edit ${task.text}`);
+                editBtn.addEventListener('click', () => {
+                    const updatedText = window.prompt('Edit task', task.text);
+                    if (updatedText === null) {
+                        return;
+                    }
+
+                    const trimmedText = updatedText.trim();
+                    if (!trimmedText) {
+                        window.alert('Task cannot be empty.');
+                        return;
+                    }
+
+                    task.text = trimmedText;
+                    saveTasks();
+                    renderTasks();
+                });
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.type = 'button';
                 deleteBtn.className = 'delete-btn';
@@ -65,10 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 li.appendChild(checkbox);
                 li.appendChild(span);
+                li.appendChild(editBtn);
                 li.appendChild(deleteBtn);
                 taskList.appendChild(li);
             });
         }
+
+        filterButtons.forEach((button) => {
+            button.classList.toggle('active', button.dataset.filter === currentFilter);
+        });
 
         updateTaskCount();
     }
@@ -95,6 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
     taskForm.addEventListener('submit', (event) => {
         event.preventDefault();
         addTask();
+    });
+
+    filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            currentFilter = button.dataset.filter;
+            renderTasks();
+        });
     });
 
     clearCompletedBtn.addEventListener('click', () => {
